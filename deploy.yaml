@@ -1,7 +1,7 @@
-all:
-  hosts:
-    localhost
-  children:
-    workers:
-      hosts:
-        worker-hostname:
+---
+- name: Hello World
+  hosts: localhost
+  
+  tasks:
+    - name: Run the hello-world docker contianer
+      command: "docker run h108077/hello-world:latest"

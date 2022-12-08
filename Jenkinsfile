@@ -1,7 +1,5 @@
 pipeline {
-    agent {
-        node any
-    }
+    agent any
 
     stages {
         stage('Build') {
@@ -16,7 +14,7 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    sh 'docker run mine/hello-world.test .'
+                    sh 'docker run mine/hello-world.test'
                 }
             }
         }
@@ -24,7 +22,16 @@ pipeline {
         stage('Push Image') {
             steps {
                 script {
-                    sh 'docker push -f Dockerfile.test -t mine/hello-world.test .'
+                    withCredentials(
+                        [usernamePassword(
+                            credentialsId: 'ciminobo-docker.com',
+                            usernameVariable: 'DOCKER_USERNAME',
+                            passwordVariable: 'DOCKER_PASSWORD')]
+                    ) {
+                        sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
+                        sh 'docker image tag mine/hello-world h108077/hello-world:latest'
+                        sh 'docker push  h108077/hello-world:latest'
+                    }
                 }
             }
         }
@@ -32,7 +39,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    sh 'ansible-playbook .'
+                    sh 'ansible-playbook deploy.yaml'
                 }
             }
         }
