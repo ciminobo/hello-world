@@ -1,0 +1,8 @@
+FROM bash
+FROM gcc:latest
+COPY . /src
+WORKDIR /src/
+
+RUN make
+
+CMD [ "bash", "/src/test.bash" ]
