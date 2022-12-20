@@ -1,1 +1,8 @@
-Hello world C program with Docker, Ansible, and Jenkins integration.
+This directory contains segregated versions of a 
+
+The top level contains the common code for all deployments, which is
+a Hello world C program and its Dockerfiles.
+
+The "generic" directory is for a generic Jenkins deploying the container
+to docker.io. The aws, gcp, and azure directories contain the Jenkinsfiles
+and ansibles for deployments on those different cloud providers.

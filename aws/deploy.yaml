@@ -1,0 +1,7 @@
+---
+- name: Hello World
+  hosts: localhost
+  
+  tasks:
+    - name: Run the hello-world docker contianer
+      command: "docker run 869933003205.dkr.ecr.us-east-2.amazonaws.com/hello-world:latest"

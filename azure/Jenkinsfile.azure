@@ -22,11 +22,10 @@ pipeline {
         stage('Push Image') {
             steps {
                 script {
-                    withCredentials([file(credentialsId: 'gcp-cimino-jenkins-artifactory-service-key', 'variable': 'ARTIFACTORY_KEY')]) {
-                        sh "echo $ARTIFACTORY_KEY | docker login -u _json_key_base64 --password-stdin https://us-east1-docker.pkg.dev"
-                        sh 'docker image tag mine/hello-world us-east1-docker.pkg.dev/cimino-jenkins/repo/hello-world:latest'
-                        sh 'docker push us-east1-docker.pkg.dev/cimino-jenkins/repo/hello-world:latest'
-                    }
+                    sh "az login"
+                    sh "az acr login --name myregistry"
+                    sh 'docker image tag mine/hello-world myregistry.azurecr.io/samples/helloworld:latest'
+                    sh 'docker push myregistry.azurecr.io/samples/helloworld:latest
                 }
             }
         }
@@ -34,7 +33,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    sh 'ansible-playbook deploy.yaml'
+                    sh 'ansible-playbook azure/deploy.yaml'
                 }
             }
         }

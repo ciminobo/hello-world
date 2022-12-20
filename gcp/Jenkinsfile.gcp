@@ -22,15 +22,11 @@ pipeline {
         stage('Push Image') {
             steps {
                 script {
-                    withCredentials(
-                        [usernamePassword(
-                            credentialsId: 'ciminobo-docker.com',
-                            usernameVariable: 'DOCKER_USERNAME',
-                            passwordVariable: 'DOCKER_PASSWORD')]
-                    ) {
-                        sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
-                        sh 'docker image tag mine/hello-world h108077/hello-world:latest'
-                        sh 'docker push  h108077/hello-world:latest'
+                    withCredentials([file(credentialsId: 'gcp-cimino-jenkins-artifactory-service-key', 'variable': 'ARTIFACTORY_KEY')]) {
+                        sh "cat $ARTIFACTORY_KEY | docker login -u _json_key_base64 --password-stdin https://us-east1-docker.pkg.dev"
+                        sh 'yes | /Users/H108077/Downloads/google-cloud-sdk/bin/gcloud auth configure-docker us-east1-docker.pkg.dev'
+                        sh 'docker image tag mine/hello-world us-east1-docker.pkg.dev/cimino-jenkins/hello-world/hello-world:latest'
+                        sh 'docker push us-east1-docker.pkg.dev/cimino-jenkins/hello-world/hello-world:latest'
                     }
                 }
             }

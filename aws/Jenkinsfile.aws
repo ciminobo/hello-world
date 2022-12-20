@@ -1,0 +1,41 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Build') {
+            steps {
+                script {
+                    sh 'docker build -f Dockerfile -t hello-world .'
+                    sh 'docker build -f Dockerfile.test -t hello-world.test .'
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                script {
+                    sh 'docker run mine/hello-world.test'
+                }
+            }
+        }
+
+        // For AWS needs the aws cli installed and creds configured with aws configure.
+        stage('Push Image') {
+            steps {
+                script {
+                    sh 'aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 869933003205.dkr.ecr.us-east-2.amazonaws.com'
+                    sh 'docker tag hello-world 869933003205.dkr.ecr.us-east-2.amazonaws.com/hello-world:latest'
+                    sh 'docker push 869933003205.dkr.ecr.us-east-2.amazonaws.com/hello-world:latest'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    sh 'ansible-playbook aws/deploy.yaml'
+                }
+            }
+        }
+    }
+}
