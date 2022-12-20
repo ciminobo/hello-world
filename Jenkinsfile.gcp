@@ -1,0 +1,42 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Build') {
+            steps {
+                script {
+                    sh 'docker build -f Dockerfile -t mine/hello-world .'
+                    sh 'docker build -f Dockerfile.test -t mine/hello-world.test .'
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                script {
+                    sh 'docker run mine/hello-world.test'
+                }
+            }
+        }
+
+        stage('Push Image') {
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'gcp-cimino-jenkins-artifactory-service-key', 'variable': 'ARTIFACTORY_KEY')]) {
+                        sh "echo $ARTIFACTORY_KEY | docker login -u _json_key_base64 --password-stdin https://us-east1-docker.pkg.dev"
+                        sh 'docker image tag mine/hello-world us-east1-docker.pkg.dev/cimino-jenkins/repo/hello-world:latest'
+                        sh 'docker push us-east1-docker.pkg.dev/cimino-jenkins/repo/hello-world:latest'
+                    }
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    sh 'ansible-playbook deploy.yaml'
+                }
+            }
+        }
+    }
+}
